@@ -8,6 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
+    .text-body {
+        font-family: Georgia, 'Times New Roman', Times, serif;
+    }
     .custom-restricted-width {
         /* To limit the menu width to the content of the menu: */
         display: inline-block;
@@ -19,15 +22,18 @@
 <body>
     <div class="pure-g">
         <div class="pure-u-1-1"><p>Header</p></div>
-        <div class="pure-u-1-3"><p>Thirds</p></div>
-        <div class="pure-u-1-3"><p>Hello {{ text.body }}!</p></div>
-        <div class="pure-u-1-3">
+        <div class="pure-u-1-5"><p>Thirds</p></div>
+        <div class="pure-u-2-5">
+            <p class="text-body source-text">{{ text.body }}!</p>
+            <p class="text-body marked-text">{{ text.body }}!</p>
+        </div>
+        <div class="pure-u-1-5">
             <div class="pure-menu custom-restricted-width">
                 <span class="pure-menu-heading">Переключение ошибок</span>
                 <ul class="pure-menu-list">
                    {% for error in errors %}
                     <li class="pure-menu-item">
-                        <a href="#" class="pure-menu-link">{{ error.title }}</a>
+                        <a href="#" id="{{ error._id }}" code="{{ error.code }}" comment="{{ error.comment }}" description="{{ error.description }}" class="pure-menu-link pure-button error-button">{{ error.title }}</a>
                     </li>
                     {% endfor %}
                 </ul>
@@ -35,4 +41,9 @@
         </div>
     </div>
 </body>
+
+<!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script-->
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="{{ url_for('static', filename='text.js') }}?n=1"></script>
+
 </html>
