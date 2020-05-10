@@ -13,6 +13,16 @@ $.when( $.ready ).then(function() {
         return result
     }
 
+    function markAndHightlightByRule(textToMark, errorCode, errorComment, description, replacement) {
+        var result = '<code style="color:red">(\\ ' + errorCode + ' </code> <code style="color:green">'
+            + errorComment + ' </code>\\ '
+            + textToMark + ' <code style="color:green">:: ' + description + ' </code><code style="color:brown">>> ' + replacement
+            + ' </code><code style="color:red">\\)</code>'
+        return result
+    }
+
+    var markedText = $(".marked-text").html()
+
     function createNewMistake() {
         var errorCode =  $("input#errorCode").val()
         var errorComment = $("input#errorComment").val().trim()
@@ -20,12 +30,14 @@ $.when( $.ready ).then(function() {
         var selectedText = $("input#selectedText").val()
         var replacement = $("#replacement").val()
 
-        var markedText = $(".marked-text").html().replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement))
-        $(".marked-text").html(markedText)
-        //console.log(markedText)
-    }
+        markedText = markedText.replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement))
+        console.log(markedText)
 
-    var sourceText = $(".source-text").html()
+        $(".marked-text").html($(".marked-text").html().replace(selectedText, markAndHightlightByRule(selectedText, errorCode, errorComment, errorDescription, replacement)))
+
+        var sourceText = $(".source-text").html()
+        $(".source-text").html(sourceText.replace(selectedText, '<code style="color:red">'+selectedText+'</code>'))
+    }
 
     dialog = $( "#dialog-form" ).dialog({
         autoOpen: false,
@@ -33,7 +45,10 @@ $.when( $.ready ).then(function() {
         width: 500,
         modal: true,
         buttons: {
-            "Create new mistake": createNewMistake,
+            "Create new mistake": function() {
+                createNewMistake();
+                dialog.dialog( "close" );
+            },
             Cancel: function() {
               dialog.dialog( "close" );
             }
