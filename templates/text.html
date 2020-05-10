@@ -5,11 +5,13 @@
     <title>Title</title>
     <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.1/build/pure-min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
     .text-body {
         font-family: Georgia, 'Times New Roman', Times, serif;
+        padding: 1em
     }
     .custom-restricted-width {
         /* To limit the menu width to the content of the menu: */
@@ -21,15 +23,15 @@
 </head>
 <body>
     <div class="pure-g">
-        <div class="pure-u-1-1"><p>Header</p></div>
-        <div class="pure-u-1-5"><p>Thirds</p></div>
-        <div class="pure-u-2-5">
+        <div class="pure-u-1-1"><p>English essay mark-up tool</p></div>
+        <div class="pure-u-1-5"><p></p></div>
+        <div class="pure-u-3-5">
             <p class="text-body source-text">{{ text.body }}!</p>
             <p class="text-body marked-text">{{ text.body }}!</p>
         </div>
         <div class="pure-u-1-5">
             <div class="pure-menu custom-restricted-width">
-                <span class="pure-menu-heading">Переключение ошибок</span>
+                <!--span class="pure-menu-heading">Переключение ошибок</span-->
                 <ul class="pure-menu-list">
                    {% for error in errors %}
                     <li class="pure-menu-item">
@@ -40,10 +42,29 @@
             </div>
         </div>
     </div>
+
+    <div id="dialog-form" title="Mark new mistake up">
+        <form>
+            <fieldset>
+                <input type="hidden" name="errorCode" id="errorCode" value="errorCode">
+                <input type="hidden" name="selectedText" id="selectedText" value="selectedText">
+                <p><label for="errorComment">Comment</label>
+                  <input type="text" name="errorComment" id="errorComment" value="Comment" class="text ui-widget-content ui-corner-all"></p>
+                <p><label for="errorDescription">Description</label>
+                <textarea name="errorDescription" id="errorDescription" class="text ui-widget-content ui-corner-all">Extended description</textarea></p>
+                <p><label for="replacement">Replacement</label>
+                <textarea name="replacement" id="replacement" class="text ui-widget-content ui-corner-all"></textarea></p>
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+            </fieldset>
+        </form>
+    </div>
+
 </body>
 
 <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script-->
 <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 <script src="{{ url_for('static', filename='text.js') }}?n=1"></script>
 
 </html>

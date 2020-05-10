@@ -13,19 +13,51 @@ $.when( $.ready ).then(function() {
         return result
     }
 
-    currentMistake = null
+    function createNewMistake() {
+        var errorCode =  $("input#errorCode").val()
+        var errorComment = $("input#errorComment").val().trim()
+        var errorDescription = $("#errorDescription").val().trim()
+        var selectedText = $("input#selectedText").val()
+        var replacement = $("#replacement").val()
+
+        var markedText = $(".marked-text").html().replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement))
+        $(".marked-text").html(markedText)
+        //console.log(markedText)
+    }
+
+    var sourceText = $(".source-text").html()
+
+    dialog = $( "#dialog-form" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 500,
+        modal: true,
+        buttons: {
+            "Create new mistake": createNewMistake,
+            Cancel: function() {
+              dialog.dialog( "close" );
+            }
+        },
+        close: function() {
+            form[ 0 ].reset();
+        }
+    });
 
     $(".error-button").click(function() {
-        var currentMistake = $(this).attr("id")
-        var selectedText = getSelectionText()
         var errorCode = $(this).attr("code")
         var errorComment = $(this).attr("comment")
         var errorDescription = $(this).attr("description")
+        var selectedText = getSelectionText()
 
-        console.log(selectedText)
-        console.log(markByRule(selectedText, errorCode, errorComment, errorDescription))
+        $("input#errorCode").val(errorCode)
+        $("input#errorComment").val(errorComment)
+        $("#errorDescription").val(errorDescription)
+        $("input#selectedText").val(selectedText)
 
-        var markedText = $(".marked-text").html()
-        $(".marked-text").html(markedText.replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription)))
+        dialog.dialog( "open" );
     })
+
+    form = dialog.find( "form" ).on( "submit", function( event ) {
+        event.preventDefault();
+    });
 });
