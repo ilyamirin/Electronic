@@ -53,3 +53,13 @@ def add_markup():
     result = markups_collection.insert_one(form)
     texts_collection.update_one({"_id": ObjectId(request.form["sourceTextId"])}, {"$inc": {"edited": 1}})
     return jsonify({'objectId': str(result.inserted_id)})
+
+
+@app.route('/text/add', methods=['POST'])
+@auth.login_required
+def add_text():
+    form = {'body': request.form["body"], 'edited': 0,
+            'ts': datetime.utcnow(), 'username': auth.current_user()}
+    texts_collection = db.texts
+    result = texts_collection.insert_one(form)
+    return jsonify({'objectId': str(result.inserted_id)})
