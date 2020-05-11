@@ -49,13 +49,6 @@ $.when( $.ready ).then(function() {
 
             var sourceText = $(".source-text").html()
             $(".source-text").html(sourceText.replace(selectedText, '<code style="color:red">'+selectedText+'</code>'))
-
-            console.log($(".source-text").attr("id"))
-            var markupToSave = {
-                'sourceText': $(".source-text").attr("id"),
-                'markedText': markedText
-            }
-            $.post('/markup/add', markupToSave, function(result) { console.log(result) });
         }
     }
 
@@ -94,5 +87,20 @@ $.when( $.ready ).then(function() {
 
     form = dialog.find( "form" ).on( "submit", function( event ) {
         event.preventDefault();
+    });
+
+    $(".save-result-button").click(function() {
+        var markupToSave = {
+            'sourceTextId': $(".source-text").attr("id"),
+            'markedText': markedText
+        }
+        $.post('/markup/add', markupToSave, function(result) {
+            console.log(result)
+            if (result.objectId.length > 0) {
+                alert("Сохранено!")
+            } else {
+                alert("Не работает!")
+            }
+        });
     });
 });
