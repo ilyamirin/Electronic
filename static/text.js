@@ -14,7 +14,7 @@ $.when( $.ready ).then(function() {
     }
 
     function markAndHightlightByRule(textToMark, errorCode, errorComment, description, replacement) {
-        var result = '<code style="color:red">(\\ ' + errorCode + ' </code> <code style="color:green">'
+        var result = '<code style="color:red">(\\ ' + errorCode + ' </code><code style="color:green">'
             + errorComment + ' </code>\\ '
             + textToMark + ' <code style="color:green">:: ' + description + ' </code><code style="color:brown">>> ' + replacement
             + ' </code><code style="color:red">\\)</code>'
@@ -30,18 +30,27 @@ $.when( $.ready ).then(function() {
         var selectedText = $("input#selectedText").val()
         var replacement = $("#replacement").val()
 
-        markedText = markedText.replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement))
-        console.log(markedText)
+        if (selectedText.length > 0) {
+            markedText = markedText.replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement))
+            console.log(markedText)
 
-        $(".marked-text").html($(".marked-text").html().replace(selectedText, markAndHightlightByRule(selectedText, errorCode, errorComment, errorDescription, replacement)))
+            $(".marked-text").html($(".marked-text").html().replace(selectedText, markAndHightlightByRule(selectedText, errorCode, errorComment, errorDescription, replacement)))
 
-        var sourceText = $(".source-text").html()
-        $(".source-text").html(sourceText.replace(selectedText, '<code style="color:red">'+selectedText+'</code>'))
+            var sourceText = $(".source-text").html()
+            $(".source-text").html(sourceText.replace(selectedText, '<code style="color:red">'+selectedText+'</code>'))
+
+            console.log($(".source-text").attr("id"))
+            var markupToSave = {
+                'sourceText': $(".source-text").attr("id"),
+                'markedText': markedText
+            }
+            $.post('/markup/add', markupToSave, function(result) { console.log(result) });
+        }
     }
 
     dialog = $( "#dialog-form" ).dialog({
         autoOpen: false,
-        height: 300,
+        height: 400,
         width: 500,
         modal: true,
         buttons: {
