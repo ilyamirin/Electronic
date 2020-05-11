@@ -9,15 +9,26 @@ $.when( $.ready ).then(function() {
     }
 
     function markByRule(textToMark, errorCode, errorComment, description, replacement) {
-        var result = '(\\ ' + errorCode + ' ' + errorComment + ' \\ ' + textToMark + ' :: ' + description + ' >> ' + replacement + ' \\)'
+        var result = '(\\ ' + errorCode + ' ' + errorComment + ' \\ ' + textToMark
+        if (description.length > 0) {
+            result += ' :: ' + description
+        }
+        if (replacement.length > 0) {
+            result += ' >> ' + replacement
+        }
+        result += ' \\)'
         return result
     }
 
     function markAndHightlightByRule(textToMark, errorCode, errorComment, description, replacement) {
-        var result = '<code style="color:red">(\\ ' + errorCode + ' </code><code style="color:green">'
-            + errorComment + ' </code>\\ '
-            + textToMark + ' <code style="color:green">:: ' + description + ' </code><code style="color:brown">>> ' + replacement
-            + ' </code><code style="color:red">\\)</code>'
+        var result = '<code style="color:red">(\\ ' + errorCode + ' </code><code style="color:green">' + errorComment + ' </code>\\ ' + textToMark
+        if (description.length > 0) {
+            result += ' <code style="color:green">:: ' + description + '</code>'
+        }
+        if (replacement.length > 0) {
+            result += ' <code style="color:brown">>> ' + replacement + ' </code>'
+        }
+        result += ' <code style="color:red">\\)</code>'
         return result
     }
 
