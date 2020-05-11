@@ -1,9 +1,8 @@
-from flask import Flask, escape, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
 from flask_httpauth import HTTPBasicAuth
-from werkzeug.security import generate_password_hash, check_password_hash
 import hashlib
 
 client = MongoClient('localhost', 27017)
