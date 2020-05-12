@@ -2,48 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.1/build/pure-min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <style>
+        .editor-container {
+
+            background-color: #f0ffeb
+        }
+    </style>
+
     <title>Title</title>
 </head>
 <body>
-<div>
-    <form>
-        <div id="editorjs"></div>
-        <input type="hidden" name="text">
-        <button type="submit">Отправить</button>
-    </form>
+<div class="pure-g">
+    <div class="pure-u-1-5"></div>
+    <div class="pure-u-3-5 editor-container"><div id="editorjs" ></div></div>
+    <div class="pure-u-1-5">
+        <div class="pure-menu custom-restricted-width">
+            <!--a class="pure-menu-heading">Переключение ошибок</a-->
+            <ul class="pure-menu-list">
+                <li class="pure-menu-item">
+                    <a href="#" class="pure-menu-link pure-button save-result-button">Сохранить</a>
+                </li>
+                <li class="pure-menu-item">
+                    <a href="/text/new" class="pure-menu-link pure-button new-button">Заново</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>
+
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
 
-<script>
-    const editor = new EditorJS({
-      /**
-       * Id of Element that should contain Editor instance
-       */
-      holder: 'editorjs',
-      /**
-       * Available Tools list.
-       * Pass Tool's class or Settings object for each Tool you want to use
-       */
-      tools: {
-        header: {
-          class: Header,
-          inlineToolbar: ['link'],
-          config: {
-            placeholder: 'Enter a header',
-            levels: [2, 3, 4],
-            defaultLevel: 3
-          }
-        },
-        list: {
-          class: List,
-          inlineToolbar: true
-        }
-      },
-    });
-</script>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+<script src="{{ url_for('static', filename='new_text.js') }}?n=1"></script>
 
 </html>

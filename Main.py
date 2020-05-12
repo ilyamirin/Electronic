@@ -70,6 +70,7 @@ def add_text():
 
 
 @app.route('/text/new')
+@auth.login_required
 def new_text():
     return render_template('new_text.html')
 
