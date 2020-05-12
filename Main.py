@@ -12,7 +12,7 @@ mongo_uri = os.environ.get("ELECTRONIC_URI", default="localhost")
 client = MongoClient(mongo_uri)
 db = client.electronic
 
-app = Flask(__name__)
+application = Flask(__name__)
 
 auth = HTTPBasicAuth()
 
@@ -33,9 +33,9 @@ def verify_password(username, password):
         return False
 
 
-@app.route('/')
-@app.route('/text')
-@app.route('/text/<text_id>')
+@application.route('/')
+@application.route('/text')
+@application.route('/text/<text_id>')
 @auth.login_required
 def main(text_id=None):
     texts_collection = db.texts
@@ -47,7 +47,7 @@ def main(text_id=None):
     return render_template('text.html', text=text, errors=get_errors())
 
 
-@app.route('/markup/add', methods=['POST'])
+@application.route('/markup/add', methods=['POST'])
 @auth.login_required
 def add_markup():
     form = {'sourceTextId': request.form["sourceTextId"], 'markedText': request.form["markedText"],
@@ -59,7 +59,7 @@ def add_markup():
     return jsonify({'objectId': str(result.inserted_id)})
 
 
-@app.route('/text/add', methods=['POST'])
+@application.route('/text/add', methods=['POST'])
 @auth.login_required
 def add_text():
     form = {'body': request.form["body"], 'edited': 0,
@@ -69,11 +69,11 @@ def add_text():
     return jsonify({'objectId': str(result.inserted_id)})
 
 
-@app.route('/text/new')
+@application.route('/text/new')
 @auth.login_required
 def new_text():
     return render_template('new_text.html')
 
 
 if __name__ == '__main__':
-    app.run(host=self_host, port=80)
+    application.run(host=self_host, port=80)
