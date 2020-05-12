@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <form>
+        <div id="editorjs"></div>
+        <input type="hidden" name="text">
+        <button type="submit">Отправить</button>
+    </form>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+
+<script>
+    const editor = new EditorJS({
+      /**
+       * Id of Element that should contain Editor instance
+       */
+      holder: 'editorjs',
+      /**
+       * Available Tools list.
+       * Pass Tool's class or Settings object for each Tool you want to use
+       */
+      tools: {
+        header: {
+          class: Header,
+          inlineToolbar: ['link'],
+          config: {
+            placeholder: 'Enter a header',
+            levels: [2, 3, 4],
+            defaultLevel: 3
+          }
+        },
+        list: {
+          class: List,
+          inlineToolbar: true
+        }
+      },
+    });
+</script>
+
+</html>

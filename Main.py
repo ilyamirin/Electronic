@@ -26,8 +26,7 @@ def get_errors():
 @auth.verify_password
 def verify_password(username, password):
     users_collection = db.users
-    user = users_collection.find_one(
-        {"username": username, "password": hashlib.sha256(password.encode('utf-8')).hexdigest()})
+    user = users_collection.find_one({"username": username, "password": hashlib.sha256(password.encode('utf-8')).hexdigest()})
     if user is not None:
         return True
     else:
@@ -68,6 +67,11 @@ def add_text():
     texts_collection = db.texts
     result = texts_collection.insert_one(form)
     return jsonify({'objectId': str(result.inserted_id)})
+
+
+@app.route('/text/new')
+def new_text():
+    return render_template('new_text.html')
 
 
 if __name__ == '__main__':
