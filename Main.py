@@ -1,11 +1,15 @@
-from flask import Flask , request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
 from flask_httpauth import HTTPBasicAuth
 import hashlib
+import os
 
-client = MongoClient('localhost', 27017)
+self_host = os.environ.get("ELECTRONIC_SELF_HOST", default="localhost")
+
+mongo_uri = os.environ.get("ELECTRONIC_URI", default="localhost")
+client = MongoClient(mongo_uri)
 db = client.electronic
 
 app = Flask(__name__)
@@ -22,7 +26,8 @@ def get_errors():
 @auth.verify_password
 def verify_password(username, password):
     users_collection = db.users
-    user = users_collection.find_one({"username": username, "password": hashlib.sha256(password.encode('utf-8')).hexdigest()})
+    user = users_collection.find_one(
+        {"username": username, "password": hashlib.sha256(password.encode('utf-8')).hexdigest()})
     if user is not None:
         return True
     else:
@@ -63,3 +68,7 @@ def add_text():
     texts_collection = db.texts
     result = texts_collection.insert_one(form)
     return jsonify({'objectId': str(result.inserted_id)})
+
+
+if __name__ == '__main__':
+    app.run(host=self_host, port=80)
