@@ -1,7 +1,4 @@
-from collections import defaultdict
-
 from flask import Flask, request, render_template, jsonify
-from numpy import unicode
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -54,12 +51,15 @@ def verify_password(username, password):
 @auth.login_required
 def main(text_id=None):
     texts_collection = db.texts
-    text = None
     if text_id is not None:
         text = texts_collection.find_one({"_id": ObjectId(text_id)})
     else:
-        text = texts_collection.find_one({"edited": {"$lt": 3}})
-    return render_template('text.html', text=text, errors=get_errors())
+        username_not_equal_current = {'username': {"$ne": auth.current_user()}}
+        ids = db.markups.find(username_not_equal_current, {'_id'})
+        edited_lesser_then_3 = {"edited": {"$lt": 3}}
+        id_not_in = {'_id': {'$not': {"$in": ids[:]}}}
+        text = texts_collection.find_one({"$and": [id_not_in, edited_lesser_then_3]})
+    return render_template('text.html', text=text, errors=get_errors(), user=auth.current_user())
 
 
 @application.route('/markup/add', methods=['POST'])
