@@ -1,4 +1,7 @@
+from collections import defaultdict
+
 from flask import Flask, request, render_template, jsonify
+from numpy import unicode
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -8,7 +11,7 @@ import os
 
 self_host = os.environ.get("ELECTRONIC_SELF_HOST", default="localhost")
 
-mongo_uri = os.environ.get("ELECTRONIC_URI", default="localhost")
+mongo_uri = os.environ.get("ELECTRONIC_URI", default='mongodb://ilyam:efgerwtghretbthg@178.62.199.200:27017/admin?authSource=electronic&readPreference=primary&appname=MongoDB%20Compass&ssl=false')
 client = MongoClient(mongo_uri)
 db = client.electronic
 
@@ -19,8 +22,16 @@ auth = HTTPBasicAuth()
 
 def get_errors():
     errors_collection = db.errors
-    errors = errors_collection.find()
-    return errors
+    result = dict()
+    for error in errors_collection.find():
+        if result.get(error['criterion']) is None:
+            result[error['criterion']] = dict()
+        elif result.get(error['criterion']).get(error['code']) is None:
+            result[error['criterion']][error['code']] = dict()
+        elif result.get(error['criterion']).get(error['code']).get(error['comment']) is None:
+            result[error['criterion']][error['code']][error['comment']] = {'description': error['description'], '_id': error['_id']}
+    print(result)
+    return result
 
 
 @auth.verify_password

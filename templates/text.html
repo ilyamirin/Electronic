@@ -51,9 +51,30 @@
             <div class="pure-menu custom-restricted-width">
                 <a class="pure-menu-heading">Переключение ошибок</a>
                 <ul class="pure-menu-list">
-                   {% for error in errors %}
+                   {% for criterion in errors.keys() %}
                     <li class="pure-menu-item">
-                        <a href="#" id="{{ error._id }}" code="{{ error.code }}" comment="{{ error.comment }}" description="{{ error.description }}" class="pure-menu-link pure-button error-button">{{ error.title }}</a>
+                        <ul class="pure-menu-list">
+                        {% for code in errors.get(criterion) %}
+
+                            <li class="pure-menu-item">
+                                <ul class="pure-menu-list">
+                                {% for comment in errors.get(criterion).get(code) %}
+                                    <li class="pure-menu-item">
+                                    <a href="#"
+                                       id="{{ errors.get(criterion).get(code).get(comment)._id }}"
+                                       code="{{ code }}"
+                                       comment="{{ comment }}"
+                                       description="{{ errors.get(criterion).get(code).get(comment).description }}"
+                                       class="pure-menu-link pure-button error-button">
+                                        {{ code }} {{ comment }}
+                                    </a>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+
+                        {% endfor %}
+                        </ul>
                     </li>
                     {% endfor %}
                 </ul>
