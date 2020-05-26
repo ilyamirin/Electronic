@@ -21,7 +21,7 @@ $.when( $.ready ).then(function() {
     }
 
     function markAndHightlightByRule(textToMark, errorCode, errorComment, description, replacement) {
-        var result = '<code style="color:red">(\\ ' + errorCode + ' </code><code style="color:green">' + errorComment + ' </code>\\ ' + textToMark
+        var result = '<code style="color:red">(\\ ' + errorCode + ' </code><code style="color:green">' + errorComment + ' \\</code> ' + textToMark
         if (description.length > 0) {
             result += ' <code style="color:green">:: ' + description + '</code>'
         }
@@ -54,11 +54,11 @@ $.when( $.ready ).then(function() {
 
     dialog = $( "#dialog-form" ).dialog({
         autoOpen: false,
-        height: 400,
+        height: 550,
         width: 500,
         modal: true,
         buttons: {
-            "Create new mistake": function() {
+            "Разметить ошибку": function() {
                 createNewMistake();
                 dialog.dialog( "close" );
             },
@@ -72,13 +72,15 @@ $.when( $.ready ).then(function() {
     });
 
     $(".error-button").click(function() {
+        var errorId = $(this).attr("id")
         var errorCode = $(this).attr("code")
-        var errorComment = $(this).attr("comment")
-        var errorDescription = $(this).attr("description")
+        var errorComment = $(this).text()
+        var errorDescription = $(this).attr("title")
         var selectedText = getSelectionText()
 
+        $("input#id").val(errorId)
         $("input#errorCode").val(errorCode)
-        $("input#errorComment").val(errorComment)
+        if(errorCode != errorComment) { $("input#errorComment").val(errorComment) }
         $("#errorDescription").val(errorDescription)
         $("input#selectedText").val(selectedText)
 

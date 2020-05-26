@@ -24,12 +24,17 @@ def get_errors():
     errors_collection = db.errors
     result = dict()
     for error in errors_collection.find():
-        if result.get(error['criterion']) is None:
-            result[error['criterion']] = dict()
-        elif result.get(error['criterion']).get(error['code']) is None:
-            result[error['criterion']][error['code']] = dict()
-        elif result.get(error['criterion']).get(error['code']).get(error['comment']) is None:
-            result[error['criterion']][error['code']][error['comment']] = {'description': error['description'], '_id': error['_id']}
+        criterion = error['criterion']
+        code = error['code']
+        comment = error['comment']
+        if comment == '':
+            comment = code
+        if result.get(criterion) is None:
+            result[criterion] = dict()
+        if result.get(criterion).get(code) is None:
+            result[criterion][code] = dict()
+        if result.get(criterion).get(code).get(comment) is None:
+            result[criterion][code][comment] = {'description': error['description'], '_id': str(error['_id'])}
     print(result)
     return result
 

@@ -12,11 +12,8 @@
     .text-body {
         padding: 1em
     }
-    .custom-restricted-width {
-        /* To limit the menu width to the content of the menu: */
-        display: inline-block;
-        /* Or set the width explicitly: */
-        /* width: 10em; */
+    .custom-restricted-height {
+        height: 30em;
     }
     .source-text {
         background-color: #f0ffeb
@@ -28,10 +25,9 @@
 </head>
 <body>
     <div class="pure-g">
-        <div class="pure-u-1-1">
-        </div>
+
         <div class="pure-u-1-5">
-            <div class="pure-menu custom-restricted-width">
+            <div class="pure-menu">
                 <a class="pure-menu-heading">Файл разметки</a>
                 <ul class="pure-menu-list">
                     <li class="pure-menu-item">
@@ -48,51 +44,37 @@
             <div class="text-body marked-text">{{ text.body }}!</div>
         </div>
         <div class="pure-u-1-5">
-            <div class="pure-menu custom-restricted-width">
-                <a class="pure-menu-heading">Переключение ошибок</a>
-                <ul class="pure-menu-list">
-                   {% for criterion in errors.keys() %}
+            <a class="pure-menu-heading">Типы ошибок</a>
+            <div class="pure-menu-scrollable custom-restricted-height">
+
+            <ul class="pure-menu-list">
+                {% for criterion in errors.keys() %}
+                    <h3>{{ criterion  }}</h3>
+                    {% for code in errors.get(criterion) %}
+                    <h4>{{ code  }}</h4>
                     <li class="pure-menu-item">
-                        <ul class="pure-menu-list">
-                        {% for code in errors.get(criterion) %}
-
-                            <li class="pure-menu-item">
-                                <ul class="pure-menu-list">
-                                {% for comment in errors.get(criterion).get(code) %}
-                                    <li class="pure-menu-item">
-                                    <a href="#"
-                                       id="{{ errors.get(criterion).get(code).get(comment)._id }}"
-                                       code="{{ code }}"
-                                       comment="{{ comment }}"
-                                       description="{{ errors.get(criterion).get(code).get(comment).description }}"
-                                       class="pure-menu-link pure-button error-button">
-                                        {{ code }} {{ comment }}
-                                    </a>
-                                    </li>
-                                {% endfor %}
-                                </ul>
-                            </li>
-
+                        {% for comment in errors.get(criterion).get(code) %}
+                            <a id="{{ errors.get(criterion).get(code).get(comment)._id }}" code="{{ code }}" title="{{ errors.get(criterion).get(code).get(comment).description }}" class="pure-menu-link pure-button error-button">{{ comment }}</a>
                         {% endfor %}
-                        </ul>
                     </li>
                     {% endfor %}
-                </ul>
+                {% endfor %}
+             </ul>
             </div>
         </div>
     </div>
 
-    <div id="dialog-form" title="Mark new mistake up">
+    <div id="dialog-form" title="Разметка ошибки">
         <form>
             <fieldset>
                 <input type="hidden" name="errorCode" id="errorCode" value="errorCode">
                 <input type="hidden" name="selectedText" id="selectedText" value="selectedText">
-                <p><label for="errorComment">Comment</label>
-                  <input type="text" name="errorComment" id="errorComment" value="Comment" class="text ui-widget-content ui-corner-all"></p>
-                <p><label for="errorDescription">Description</label>
-                <textarea name="errorDescription" id="errorDescription" class="text ui-widget-content ui-corner-all">Extended description</textarea></p>
-                <p><label for="replacement">Replacement</label>
-                <textarea name="replacement" id="replacement" class="text ui-widget-content ui-corner-all"></textarea></p>
+                <p><label for="errorComment">Комментарий</label>
+                  <input type="text" name="errorComment" id="errorComment" value="" class="text ui-widget-content ui-corner-all"></p>
+                <p><label for="errorDescription">Развернутое описание</label>
+                <textarea name="errorDescription" rows="7" cols="50" id="errorDescription" class="text ui-widget-content ui-corner-all">Extended description</textarea></p>
+                <p><label for="replacement">Правильная версия (если нужна)</label>
+                <textarea name="replacement" rows="7" cols="50" id="replacement" class="text ui-widget-content ui-corner-all"></textarea></p>
                 <!-- Allow form submission with keyboard without duplicating the dialog button -->
             </fieldset>
         </form>
