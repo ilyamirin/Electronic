@@ -35,7 +35,6 @@ def get_errors():
             result[criterion][code] = dict()
         if result.get(criterion).get(code).get(comment) is None:
             result[criterion][code][comment] = {'description': error['description'], '_id': str(error['_id'])}
-    print(result)
     return result
 
 

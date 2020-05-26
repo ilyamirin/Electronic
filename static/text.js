@@ -8,7 +8,7 @@ $.when( $.ready ).then(function() {
         }
     }
 
-    function markByRule(textToMark, errorCode, errorComment, description, replacement) {
+    function markByRule(textToMark, errorCode, errorComment, description, replacement, tag) {
         var result = '(\\ ' + errorCode + ' ' + errorComment + ' \\ ' + textToMark
         if (description.length > 0) {
             result += ' :: ' + description
@@ -16,17 +16,24 @@ $.when( $.ready ).then(function() {
         if (replacement.length > 0) {
             result += ' >> ' + replacement
         }
+        if (tag.length > 0) {
+            result += ' # ' + tag
+        }
         result += ' \\)'
+        console.log(result)
         return result
     }
 
-    function markAndHightlightByRule(textToMark, errorCode, errorComment, description, replacement) {
+    function markAndHightlightByRule(textToMark, errorCode, errorComment, description, replacement, tag) {
         var result = '<code style="color:red">(\\ ' + errorCode + ' </code><code style="color:green">' + errorComment + ' \\</code> ' + textToMark
         if (description.length > 0) {
             result += ' <code style="color:green">:: ' + description + '</code>'
         }
         if (replacement.length > 0) {
             result += ' <code style="color:brown">>> ' + replacement + ' </code>'
+        }
+        if (tag.length > 0) {
+            result += ' <code style="color:blue"># ' + tag + ' </code>'
         }
         result += ' <code style="color:red">\\)</code>'
         return result
@@ -40,12 +47,13 @@ $.when( $.ready ).then(function() {
         var errorDescription = $("#errorDescription").val().trim()
         var selectedText = $("input#selectedText").val()
         var replacement = $("#replacement").val()
+        var tag = $("#errorTag").val()
 
         if (selectedText.length > 0) {
-            markedText = markedText.replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement))
+            markedText = markedText.replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement, tag))
             console.log(markedText)
 
-            $(".marked-text").html($(".marked-text").html().replace(selectedText, markAndHightlightByRule(selectedText, errorCode, errorComment, errorDescription, replacement)))
+            $(".marked-text").html($(".marked-text").html().replace(selectedText, markAndHightlightByRule(selectedText, errorCode, errorComment, errorDescription, replacement, tag)))
 
             var sourceText = $(".source-text").html()
             $(".source-text").html(sourceText.replace(selectedText, '<code style="color:red">'+selectedText+'</code>'))
@@ -54,7 +62,7 @@ $.when( $.ready ).then(function() {
 
     dialog = $( "#dialog-form" ).dialog({
         autoOpen: false,
-        height: 550,
+        height: 600,
         width: 500,
         modal: true,
         buttons: {
