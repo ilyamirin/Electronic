@@ -54,10 +54,10 @@ def main(text_id=None):
     if text_id is not None:
         text = texts_collection.find_one({"_id": ObjectId(text_id)})
     else:
-        username_not_equal_current = {'username': {"$ne": auth.current_user()}}
-        ids = db.markups.find(username_not_equal_current, {'_id'})
+        username_equal_current = {'username': auth.current_user()}
+        ids = list(db.markups.find(username_equal_current, {'sourceTextId': 1}))
         edited_lesser_then_3 = {"edited": {"$lt": 3}}
-        id_not_in = {'_id': {'$not': {"$in": ids[:]}}}
+        id_not_in = {'_id': {'$not': {"$in": list(map(lambda i: i['sourceTextId'], ids))}}}
         text = texts_collection.find_one({"$and": [id_not_in, edited_lesser_then_3]})
     return render_template('text.html', text=text, errors=get_errors(), user=auth.current_user())
 
