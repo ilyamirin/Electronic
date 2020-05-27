@@ -83,7 +83,7 @@ def add_text():
             'ts': datetime.utcnow(), 'username': auth.current_user()}
     texts_collection = db.texts
     result = texts_collection.insert_one(form)
-    return jsonify({'objectId': str(result.inserted_id)})
+    return json.jsonify({'objectId': str(result.inserted_id)})
 
 
 @application.route('/text/new')
