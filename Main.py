@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, json
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -65,13 +65,15 @@ def main(text_id=None):
 @application.route('/markup/add', methods=['POST'])
 @auth.login_required
 def add_markup():
+    print(request.form)
     form = {'sourceTextId': request.form["sourceTextId"], 'markedText': request.form["markedText"],
+            'mistakes': json.loads(request.form["mistakes"]),
             'ts': datetime.utcnow(), 'username': auth.current_user()}
     markups_collection = db.markups
     texts_collection = db.texts
     result = markups_collection.insert_one(form)
     texts_collection.update_one({"_id": ObjectId(request.form["sourceTextId"])}, {"$inc": {"edited": 1}})
-    return jsonify({'objectId': str(result.inserted_id)})
+    return json.jsonify({'objectId': str(result.inserted_id)})
 
 
 @application.route('/text/add', methods=['POST'])

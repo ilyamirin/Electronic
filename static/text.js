@@ -1,8 +1,20 @@
 
 $.when( $.ready ).then(function() {
+    function nl2br(str){
+        result = ''
+        str.split(/(?:\r\n|\r|\n)/g).forEach(function(block) {
+            result += '<p>' + block + '</p>'
+        })
+        return result
+    }
+
     function getSelectionText() {
         if (window.getSelection) {
-            return window.getSelection().toString();
+            return {
+                'text': window.getSelection().toString(),
+                'start': window.getSelection().anchorOffset,
+                'finish': window.getSelection().focusOffset,
+            }
         } else if (document.selection && document.selection.type != "Control") {
             return document.selection.createRange().text;
         }
@@ -20,43 +32,56 @@ $.when( $.ready ).then(function() {
             result += ' # ' + tag
         }
         result += ' \\)'
-        console.log(result)
         return result
     }
 
-    function markAndHightlightByRule(textToMark, errorCode, errorComment, description, replacement, tag) {
-        var result = '<code style="color:red">(\\ ' + errorCode + ' </code><code style="color:green">' + errorComment + ' \\</code> ' + textToMark
-        if (description.length > 0) {
-            result += ' <code style="color:green">:: ' + description + '</code>'
+    function markAndHightlightByRule(m) {
+        var result = '<code style="color:red">(\\ ' + m.errorCode + ' </code><code style="color:green">' + m.errorComment + ' \\</code> ' + m.selectedText
+        if (m.errorDescription.length > 0) {
+            result += ' <code style="color:green">:: ' + m.errorDescription + '</code>'
         }
-        if (replacement.length > 0) {
-            result += ' <code style="color:brown">>> ' + replacement + ' </code>'
+        if (m.replacement.length > 0) {
+            result += ' <code style="color:brown">>> ' + m.replacement + ' </code>'
         }
-        if (tag.length > 0) {
-            result += ' <code style="color:blue"># ' + tag + ' </code>'
+        if (m.errorTag.length > 0) {
+            result += ' <code style="color:blue"># ' + m.errorTag + ' </code>'
         }
         result += ' <code style="color:red">\\)</code>'
         return result
     }
 
-    var markedText = $(".marked-text").html()
+    var text = $(".marked-text").text()
+    var mistakes = []
+
+    $('.text-body').html(nl2br($('.text-body').html()))
 
     function createNewMistake() {
-        var errorCode =  $("input#errorCode").val()
-        var errorComment = $("input#errorComment").val().trim()
-        var errorDescription = $("#errorDescription").val().trim()
-        var selectedText = $("input#selectedText").val()
-        var replacement = $("#replacement").val()
-        var tag = $("#errorTag").val()
+        var mistake = {
+            errorCode: $("input#errorCode").val(),
+            errorComment: $("input#errorComment").val().trim(),
+            errorDescription: $("#errorDescription").val().trim(),
+            selectedText: $("input#selectedText").val(),
+            selectedTextStart: $("input#selectedTextStart").val(),
+            selectedTextFinish: $("input#selectedTextFinish").val(),
+            replacement: $("#replacement").val(),
+            errorTag: $("#errorTag").val(),
+        }
 
-        if (selectedText.length > 0) {
-            markedText = markedText.replace(selectedText, markByRule(selectedText, errorCode, errorComment, errorDescription, replacement, tag))
-            console.log(markedText)
+        if (mistake.selectedText.length > 0) {
+            mistakes.push(mistake)
+            mistakes.sort(function(a, b) { return a.selectedTextStart - b.selectedTextStart})
 
-            $(".marked-text").html($(".marked-text").html().replace(selectedText, markAndHightlightByRule(selectedText, errorCode, errorComment, errorDescription, replacement, tag)))
+            console.log(mistakes)
 
-            var sourceText = $(".source-text").html()
-            $(".source-text").html(sourceText.replace(selectedText, '<code style="color:red">'+selectedText+'</code>'))
+            textForEdition = text
+            textForMarkup = text
+            mistakes.forEach(function(m) {
+                textForEdition = textForEdition.replace(m.selectedText, '<code style="color:red">'+m.selectedText+'</code>')
+                textForMarkup = textForMarkup.replace(m.selectedText, markAndHightlightByRule(m))
+            })
+
+            $(".source-text").html(nl2br(textForEdition))
+            $(".marked-text").html(nl2br(textForMarkup))
         }
     }
 
@@ -90,7 +115,9 @@ $.when( $.ready ).then(function() {
         $("input#errorCode").val(errorCode)
         if(errorCode != errorComment) { $("input#errorComment").val(errorComment) }
         $("#errorDescription").val(errorDescription)
-        $("input#selectedText").val(selectedText)
+        $("input#selectedText").val(selectedText.text)
+        $("input#selectedTextStart").val(selectedText.start)
+        $("input#selectedTextFinish").val(selectedText.finish)
 
         dialog.dialog( "open" );
     })
@@ -102,7 +129,8 @@ $.when( $.ready ).then(function() {
     $(".save-result-button").click(function() {
         var markupToSave = {
             'sourceTextId': $(".source-text").attr("id"),
-            'markedText': markedText
+            'markedText': text,
+            'mistakes': JSON.stringify(mistakes),
         }
         $.post('/markup/add', markupToSave, function(result) {
             console.log(result)
