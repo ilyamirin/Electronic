@@ -57,7 +57,7 @@ def main(text_id=None):
         username_equal_current = {'username': auth.current_user()}
         ids = list(db.markups.find(username_equal_current, {'sourceTextId': 1}))
         edited_lesser_then_3 = {"edited": {"$lt": 3}}
-        id_not_in = {'_id': {'$not': {"$in": list(map(lambda i: i['sourceTextId'], ids))}}}
+        id_not_in = {'_id': {'$not': {"$in": list(map(lambda i: ObjectId(i['sourceTextId']), ids))}}}
         text = texts_collection.find_one({"$and": [id_not_in, edited_lesser_then_3]})
     return render_template('text.html', text=text, errors=get_errors(), user=auth.current_user())
 
