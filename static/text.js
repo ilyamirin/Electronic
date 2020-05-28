@@ -75,9 +75,13 @@ $.when( $.ready ).then(function() {
 
             textForEdition = text
             textForMarkup = text
+            $('.mistakes-table-body').html('')
+            i = mistakes.length
             mistakes.forEach(function(m) {
                 textForEdition = textForEdition.replace(m.selectedText, '<code style="color:red">'+m.selectedText+'</code>')
                 textForMarkup = textForMarkup.replace(m.selectedText, markAndHightlightByRule(m))
+
+                $('.mistakes-table-body').append('<tr><td>' + i-- + '</td><td>' + m.errorCode + '</td><td>' + m.errorComment + '</td></tr>');
             })
 
             $(".source-text").html(nl2br(textForEdition))
@@ -135,9 +139,9 @@ $.when( $.ready ).then(function() {
         $.post('/markup/add', markupToSave, function(result) {
             console.log(result)
             if (result.objectId.length > 0) {
-                alert("Сохранено!")
+                alert("Сохранено! Нажмите кнопку \"Следующий\" для перехода к следующему тексту.")
             } else {
-                alert("Не работает!")
+                alert("Не работает! Пишите администратору!")
             }
         });
     });

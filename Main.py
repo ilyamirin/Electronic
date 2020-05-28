@@ -51,21 +51,27 @@ def verify_password(username, password):
 @auth.login_required
 def main(text_id=None):
     texts_collection = db.texts
+
     if text_id is not None:
         text = texts_collection.find_one({"_id": ObjectId(text_id)})
     else:
         username_equal_current = {'username': auth.current_user()}
         ids = list(db.markups.find(username_equal_current, {'sourceTextId': 1}))
         edited_lesser_then_3 = {"edited": {"$lt": 3}}
-        id_not_in = {'_id': {'$not': {"$in": list(map(lambda i: ObjectId(i['sourceTextId']), ids))}}}
+        id_not_in = {'_id': {'$nin': list(map(lambda i: ObjectId(i['sourceTextId']), ids))}}
         text = texts_collection.find_one({"$and": [id_not_in, edited_lesser_then_3]})
-    return render_template('text.html', text=text, errors=get_errors(), user=auth.current_user())
+
+    body_split = text['body'].split()
+    words_counter = len(body_split)
+    if text.get('theme') is None or text['theme'] == '':
+        text['theme'] = u' '.join(body_split[:5]) + '...'
+
+    return render_template('text.html', text=text, errors=get_errors(), user=auth.current_user(), words_counter=words_counter)
 
 
 @application.route('/markup/add', methods=['POST'])
 @auth.login_required
 def add_markup():
-    print(request.form)
     form = {'sourceTextId': request.form["sourceTextId"], 'markedText': request.form["markedText"],
             'mistakes': json.loads(request.form["mistakes"]),
             'ts': datetime.utcnow(), 'username': auth.current_user()}
@@ -93,4 +99,4 @@ def new_text():
 
 
 if __name__ == '__main__':
-    application.run(host=self_host, port=80)
+    application.run(host=self_host, port=80, debug=True)
