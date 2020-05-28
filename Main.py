@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template, json
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-from datetime import datetime
-from flask_httpauth import HTTPBasicAuth
 import hashlib
 import os
+from datetime import datetime
+from random import sample
+
+from bson.objectid import ObjectId
+from flask import Flask, request, render_template, json
+from flask_httpauth import HTTPBasicAuth
+from pymongo import MongoClient
 
 self_host = os.environ.get("ELECTRONIC_SELF_HOST", default="localhost")
 
@@ -59,7 +61,8 @@ def main(text_id=None):
         ids = list(db.markups.find(username_equal_current, {'sourceTextId': 1}))
         edited_lesser_then_3 = {"edited": {"$lt": 3}}
         id_not_in = {'_id': {'$nin': list(map(lambda i: ObjectId(i['sourceTextId']), ids))}}
-        text = texts_collection.find_one({"$and": [id_not_in, edited_lesser_then_3]})
+        texts = list(texts_collection.find({"$and": [id_not_in, edited_lesser_then_3]}).limit(10))
+        text = sample(texts, len(texts))[0]
 
     body_split = text['body'].split()
     words_counter = len(body_split)
