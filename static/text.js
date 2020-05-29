@@ -1,9 +1,13 @@
+String.prototype.replaceBetween = function(start, end, what) {
+  return this.substring(0, start) + what + this.substring(end);
+};
 
 $.when( $.ready ).then(function() {
     function nl2br(str){
         result = ''
+        i = 0
         str.split(/(?:\r\n|\r|\n)/g).forEach(function(block) {
-            result += '<p>' + block + '</p>'
+            result += '<p block="' + i++ + '">' + block + '</p>'
         })
         return result
     }
@@ -14,6 +18,7 @@ $.when( $.ready ).then(function() {
                 'text': window.getSelection().toString(),
                 'start': window.getSelection().anchorOffset,
                 'finish': window.getSelection().focusOffset,
+                'block': $(window.getSelection().anchorNode).parents('p').attr("block")
             }
         } else if (document.selection && document.selection.type != "Control") {
             return document.selection.createRange().text;
@@ -63,29 +68,59 @@ $.when( $.ready ).then(function() {
             selectedText: $("input#selectedText").val(),
             selectedTextStart: $("input#selectedTextStart").val(),
             selectedTextFinish: $("input#selectedTextFinish").val(),
+            selectedTextBlock: parseInt($("input#selectedTextBlock").val().trim()),
             replacement: $("#replacement").val(),
             errorTag: $("#errorTag").val(),
         }
 
         if (mistake.selectedText.length > 0) {
             mistakes.push(mistake)
-            mistakes.sort(function(a, b) { return a.selectedTextStart - b.selectedTextStart})
+            mistakes = mistakes.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
 
             console.log(mistakes)
 
             textForEdition = text
             textForMarkup = text
             $('.mistakes-table-body').html('')
-            i = mistakes.length
+            i = 0
             mistakes.forEach(function(m) {
-                textForEdition = textForEdition.replace(m.selectedText, '<code style="color:red">'+m.selectedText+'</code>')
-                textForMarkup = textForMarkup.replace(m.selectedText, markAndHightlightByRule(m))
+                currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
+                goReplace = true
+                newBlock = currentBlock.replace(new RegExp(m.selectedText, 'g'), function(match, offset, string) {
+                    if ((offset >= m.selectedTextStart) && goReplace) {
+                        goReplace = false
+                        return '<code style="color:red">'+m.selectedText+'</code>'
+                    }
+                    return match
+                })
+                textForEdition = textForEdition.replace(currentBlock, newBlock)
 
-                $('.mistakes-table-body').append('<tr><td>' + i-- + '</td><td>' + m.errorCode + '</td><td>' + m.errorComment + '</td></tr>');
+                goReplace = true
+                currentBlock = textForMarkup.split('\n')[m.selectedTextBlock]
+                newBlock = currentBlock.replace(new RegExp(m.selectedText, 'g'), function(match, offset, string) {
+                if ((offset >= m.selectedTextStart) && goReplace) {
+                        goReplace = false
+                        return markAndHightlightByRule(m)
+                    }
+                    return match
+                })
+                textForMarkup = textForMarkup.replace(currentBlock, newBlock)
+
+                //newBlock = currentBlock.replaceBetween(m.selectedTextStart, m.selectedTextFinish, markAndHightlightByRule(m))
+                //textForMarkup = textForMarkup.replace(currentBlock, newBlock)
+
+                $('.mistakes-table-body').append('<tr class="mistake" i="'+ i +'"><td>' + i + '</td><td>' + m.errorCode + '</td><td>' + m.errorComment + '</td></tr>');
+                i++
             })
 
             $(".source-text").html(nl2br(textForEdition))
             $(".marked-text").html(nl2br(textForMarkup))
+
+            $(".mistake").click(function (e) {
+                i = $(e.target).parent().attr('i')
+                $(".source-text").animate({color:'red'},1000);
+                console.log(mistakes[i])
+            });
         }
     }
 
@@ -122,6 +157,7 @@ $.when( $.ready ).then(function() {
         $("input#selectedText").val(selectedText.text)
         $("input#selectedTextStart").val(selectedText.start)
         $("input#selectedTextFinish").val(selectedText.finish)
+        $("input#selectedTextBlock").val(selectedText.block)
 
         dialog.dialog( "open" );
     })
