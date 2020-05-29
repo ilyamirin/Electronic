@@ -58,31 +58,12 @@ $.when( $.ready ).then(function() {
     var text = $(".marked-text").text()
     var mistakes = []
 
-    $('.text-body').html(nl2br($('.text-body').html()))
-
-    function createNewMistake() {
-        var mistake = {
-            errorCode: $("input#errorCode").val(),
-            errorComment: $("input#errorComment").val().trim(),
-            errorDescription: $("#errorDescription").val().trim(),
-            selectedText: $("input#selectedText").val(),
-            selectedTextStart: $("input#selectedTextStart").val(),
-            selectedTextFinish: $("input#selectedTextFinish").val(),
-            selectedTextBlock: parseInt($("input#selectedTextBlock").val().trim()),
-            replacement: $("#replacement").val(),
-            errorTag: $("#errorTag").val(),
-        }
-
-        if (mistake.selectedText.length > 0) {
-            mistakes.push(mistake)
-            mistakes = mistakes.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
-
-            console.log(mistakes)
-
+    function showMistakes() {
             textForEdition = text
             textForMarkup = text
             $('.mistakes-table-body').html('')
             i = 0
+
             mistakes.forEach(function(m) {
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
@@ -98,7 +79,7 @@ $.when( $.ready ).then(function() {
                 goReplace = true
                 currentBlock = textForMarkup.split('\n')[m.selectedTextBlock]
                 newBlock = currentBlock.replace(new RegExp(m.selectedText, 'g'), function(match, offset, string) {
-                if ((offset >= m.selectedTextStart) && goReplace) {
+                if ((offset = m.selectedTextStart) && goReplace) {
                         goReplace = false
                         return markAndHightlightByRule(m)
                     }
@@ -106,21 +87,45 @@ $.when( $.ready ).then(function() {
                 })
                 textForMarkup = textForMarkup.replace(currentBlock, newBlock)
 
-                //newBlock = currentBlock.replaceBetween(m.selectedTextStart, m.selectedTextFinish, markAndHightlightByRule(m))
-                //textForMarkup = textForMarkup.replace(currentBlock, newBlock)
-
-                $('.mistakes-table-body').append('<tr class="mistake" i="'+ i +'"><td>' + i + '</td><td>' + m.errorCode + '</td><td>' + m.errorComment + '</td></tr>');
+                tr = $('.mistakes-table-body').append('<tr></tr>')
+                tr.append('<td>' + i + '</td><td>' + m.errorCode + '</td><td>' + m.errorComment + '</td>');
+                tr.append('<td class="mistake" i="'+ i +'">X</td')
                 i++
             })
 
             $(".source-text").html(nl2br(textForEdition))
             $(".marked-text").html(nl2br(textForMarkup))
 
-            $(".mistake").click(function (e) {
-                i = $(e.target).parent().attr('i')
-                $(".source-text").animate({color:'red'},1000);
-                console.log(mistakes[i])
+            $(".mistake").dblclick(function (e) {
+                i = $(e.target).attr('i')
+                //$(".source-text").animate({color:'red'},1000);
+                mistakes.splice(i, 1)
+                console.log(i)
+                showMistakes()
             });
+    }
+
+    $('.text-body').html(nl2br($('.text-body').html()))
+
+    function createNewMistake() {
+        var mistake = {
+            errorCode: $("input#errorCode").val(),
+            errorComment: $("input#errorComment").val().trim(),
+            errorDescription: $("#errorDescription").val().trim(),
+            selectedText: $("input#selectedText").val(),
+            selectedTextStart: parseInt($("input#selectedTextStart").val()),
+            selectedTextFinish: parseInt($("input#selectedTextFinish").val()),
+            selectedTextBlock: parseInt($("input#selectedTextBlock").val().trim()),
+            replacement: $("#replacement").val(),
+            errorTag: $("#errorTag").val(),
+        }
+
+        if (mistake.selectedText.length > 0) {
+            mistakes.push(mistake)
+            mistakes = mistakes.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
+            console.log(mistakes)
+
+            showMistakes()
         }
     }
 
