@@ -128,7 +128,7 @@ def mark_by_rule(m):
 def mark_and_highlight_by_rule(m):
     result = '<code style="color:red">(\\ ' + m['errorCode'] + ' </code><code style="color:green">' + m['errorComment'] + " \\</code> " + m['selectedText']
     if len(m['errorDescription']) > 0:
-        result += ' <code style="color:yellow">:: ' + m['errorDescription'] + ' </code>'
+        result += ' <code style="color:darkblue">:: ' + m['errorDescription'] + ' </code>'
     if len(m['replacement']) > 0:
         result += ' <code style="color:brown">>> ' + m['replacement'] + ' </code>'
     if len(m['errorTag']) > 0:
@@ -146,19 +146,16 @@ def get_file(markup_id=None):
 
     blocks = text.split('\n')
 
-    for mistake in sorted(markup['mistakes'], key=lambda m: 1 / abs(int(m['selectedTextStart']) - int(m['selectedTextFinish']))):
+    for mistake in sorted(markup['mistakes'], key=lambda m: len(m['selectedText']), reverse=True):
         block = blocks[mistake['selectedTextBlock']]
-        for match in re.finditer(mistake['selectedText'], block):
-            pointer = max(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
+        for match in re.finditer(mistake['selectedText'].strip(), block):
+            pointer = min(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
             print(match.start(), pointer)
             if match.start() >= pointer:
-                new_block = block.replace(mistake['selectedText'], mark_and_highlight_by_rule(mistake), 1)
-                text = text.replace(block, new_block, 1)
+                blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_and_highlight_by_rule(mistake), 1)
                 break
-        print(mistake)
 
-    markup['markedText'] = text.replace('\n', '<br><br>')
-    print(len(markup['mistakes']))
+    markup['markedText'] = '<br><br>'.join(blocks)
     return render_template_string('{{ markup.markedText|safe }}', markup=markup, editor=editor, user=auth.current_user())
 
 

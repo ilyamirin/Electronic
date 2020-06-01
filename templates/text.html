@@ -50,6 +50,11 @@
                     <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
                         <a href="#" id="menuLink1" class="pure-menu-link">{{ user }}</a>
                         <ul class="pure-menu-children">
+                            {% if user in ['ilyam', 'natam'] %}
+                            <li class="pure-menu-item">
+                                <a href="/markups" class="pure-menu-link">Все разметки</a>
+                            </li>
+                            {% endif %}
                             <li class="pure-menu-item">
                                 <a href="#" class="pure-menu-link">Выйти</a>
                             </li>
