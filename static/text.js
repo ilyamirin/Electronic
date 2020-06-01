@@ -75,10 +75,12 @@ $.when( $.ready ).then(function() {
             sortedM.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
 
             sortedM.forEach(function(m) {
+                pointer = Math.min(m.selectedTextStart, m.selectedTextFinish)
+
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
-                newBlock = currentBlock.replace(new RegExp(m.selectedText, 'g'), function(match, offset, string) {
-                    if ((offset >= m.selectedTextStart) && goReplace) {
+                newBlock = currentBlock.replace(new RegExp(m.selectedText.trim(), 'g'), function(match, offset, string) {
+                    if ((offset >= pointer) && goReplace) {
                         goReplace = false
                         return '<code style="color:red">'+m.selectedText+'</code>'
                     }
@@ -88,8 +90,8 @@ $.when( $.ready ).then(function() {
 
                 goReplace = true
                 currentBlock = textForMarkup.split('\n')[m.selectedTextBlock]
-                newBlock = currentBlock.replace(new RegExp(m.selectedText, 'g'), function(match, offset, string) {
-                if ((offset = m.selectedTextStart) && goReplace) {
+                newBlock = currentBlock.replace(new RegExp(m.selectedText.trim(), 'g'), function(match, offset, string) {
+                if ((offset >= pointer) && goReplace) {
                         goReplace = false
                         return markAndHightlightByRule(m)
                     }
