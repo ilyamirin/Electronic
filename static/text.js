@@ -65,6 +65,16 @@ $.when( $.ready ).then(function() {
             i = 0
 
             mistakes.forEach(function(m) {
+                tr = $('.mistakes-table-body').append('<tr></tr>')
+                tr.append('<td>' + i + '</td><td>' + m.errorCode + '</td><td>' + m.errorComment + '</td>');
+                tr.append('<td class="mistake" i="'+ i +'">X</td')
+                i++
+            })
+
+            sortedM = [...mistakes]
+            sortedM.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
+
+            sortedM.forEach(function(m) {
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
                 newBlock = currentBlock.replace(new RegExp(m.selectedText, 'g'), function(match, offset, string) {
@@ -86,11 +96,6 @@ $.when( $.ready ).then(function() {
                     return match
                 })
                 textForMarkup = textForMarkup.replace(currentBlock, newBlock)
-
-                tr = $('.mistakes-table-body').append('<tr></tr>')
-                tr.append('<td>' + i + '</td><td>' + m.errorCode + '</td><td>' + m.errorComment + '</td>');
-                tr.append('<td class="mistake" i="'+ i +'">X</td')
-                i++
             })
 
             $(".source-text").html(nl2br(textForEdition))
@@ -122,7 +127,7 @@ $.when( $.ready ).then(function() {
 
         if (mistake.selectedText.length > 0) {
             mistakes.push(mistake)
-            mistakes = mistakes.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
+            //mistakes = mistakes.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
             console.log(mistakes)
 
             showMistakes()
