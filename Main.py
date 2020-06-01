@@ -1,16 +1,18 @@
 import hashlib
 import os
+import re
 from datetime import datetime
 from random import sample
 
 from bson.objectid import ObjectId
-from flask import Flask, request, render_template, json
+from flask import Flask, request, render_template, render_template_string, json
 from flask_httpauth import HTTPBasicAuth
 from pymongo import MongoClient
 
 self_host = os.environ.get("ELECTRONIC_SELF_HOST", default="localhost")
 
-mongo_uri = os.environ.get("ELECTRONIC_URI", default='mongodb://ilyam:efgerwtghretbthg@178.62.199.200:27017/admin?authSource=electronic&readPreference=primary&appname=MongoDB%20Compass&ssl=false')
+mongo_uri = os.environ.get("ELECTRONIC_URI",
+                           default='mongodb://ilyam:efgerwtghretbthg@178.62.199.200:27017/admin?authSource=electronic&readPreference=primary&appname=MongoDB%20Compass&ssl=false')
 client = MongoClient(mongo_uri)
 db = client.electronic
 
@@ -40,7 +42,8 @@ def get_errors():
 @auth.verify_password
 def verify_password(username, password):
     users_collection = db.users
-    user = users_collection.find_one({"username": username, "password": hashlib.sha256(password.encode('utf-8')).hexdigest()})
+    user = users_collection.find_one(
+        {"username": username, "password": hashlib.sha256(password.encode('utf-8')).hexdigest()})
     if user is not None:
         return True
     else:
@@ -69,7 +72,8 @@ def main(text_id=None):
     if text.get('theme') is None or text['theme'] == '':
         text['theme'] = u' '.join(body_split[:5]) + '...'
 
-    return render_template('text.html', text=text, errors=get_errors(), user=auth.current_user(), words_counter=words_counter)
+    return render_template('text.html', text=text, errors=get_errors(), user=auth.current_user(),
+                           words_counter=words_counter)
 
 
 @application.route('/markup/add', methods=['POST'])
@@ -99,6 +103,63 @@ def add_text():
 @auth.login_required
 def new_text():
     return render_template('new_text.html')
+
+
+@application.route('/markups')
+@auth.login_required
+def markups():
+    markups_collection = db.markups
+    result = sorted(list(markups_collection.find()), key=lambda mr: mr['ts'].timestamp(), reverse=True)
+    return render_template('markups.html', markups=result, user=auth.current_user())
+
+
+def mark_by_rule(m):
+    result = '(\\ ' + m['errorCode'] + ' ' + m['errorComment'] + ' \\ ' + m['selectedText']
+    if len(m['errorDescription']) > 0:
+        result += ' :: ' + m['errorDescription']
+    if len(m['replacement']) > 0:
+        result += ' >> ' + m['replacement'] + ' '
+    if len(m['errorTag']) > 0:
+        result += ' # ' + m['errorTag'] + ' '
+    result += ' \\)'
+    return result
+
+
+def mark_and_highlight_by_rule(m):
+    result = '<code style="color:red">(\\ ' + m['errorCode'] + ' </code><code style="color:green">' + m['errorComment'] + " \\</code> " + m['selectedText']
+    if len(m['errorDescription']) > 0:
+        result += ' <code style="color:yellow">:: ' + m['errorDescription'] + ' </code>'
+    if len(m['replacement']) > 0:
+        result += ' <code style="color:brown">>> ' + m['replacement'] + ' </code>'
+    if len(m['errorTag']) > 0:
+        result += ' <code style="color:blue"># ' + m['errorTag'] + ' </code>'
+    result += ' <code style="color:red">\\)</code>'
+    return result
+
+
+@application.route('/get/file/<markup_id>')
+@auth.login_required
+def get_file(markup_id=None):
+    markup = db.markups.find_one({'_id': ObjectId(markup_id)})
+    editor = db.users.find_one({'username': markup['username']})
+    text = markup['markedText']
+
+    blocks = text.split('\n')
+
+    for mistake in sorted(markup['mistakes'], key=lambda m: 1 / abs(int(m['selectedTextStart']) - int(m['selectedTextFinish']))):
+        block = blocks[mistake['selectedTextBlock']]
+        for match in re.finditer(mistake['selectedText'], block):
+            pointer = max(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
+            print(match.start(), pointer)
+            if match.start() >= pointer:
+                new_block = block.replace(mistake['selectedText'], mark_and_highlight_by_rule(mistake), 1)
+                text = text.replace(block, new_block, 1)
+                break
+        print(mistake)
+
+    markup['markedText'] = text.replace('\n', '<br><br>')
+    print(len(markup['mistakes']))
+    return render_template_string('{{ markup.markedText|safe }}', markup=markup, editor=editor, user=auth.current_user())
 
 
 if __name__ == '__main__':
