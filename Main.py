@@ -150,7 +150,6 @@ def get_file(markup_id=None):
         block = blocks[mistake['selectedTextBlock']]
         for match in re.finditer(mistake['selectedText'].strip(), block):
             pointer = min(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
-            print(match.start(), pointer)
             if match.start() >= pointer:
                 blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_and_highlight_by_rule(mistake), 1)
                 break

@@ -72,7 +72,7 @@ $.when( $.ready ).then(function() {
             })
 
             sortedM = [...mistakes]
-            sortedM.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
+            sortedM.sort(function(a, b) { return - a.selectedText.length + b.selectedText.length})
 
             sortedM.forEach(function(m) {
                 pointer = Math.min(m.selectedTextStart, m.selectedTextFinish)
