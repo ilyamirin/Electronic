@@ -3,6 +3,7 @@ import os
 import re
 from datetime import datetime
 from random import sample
+from zipfile import ZipFile
 
 from bson.objectid import ObjectId
 from flask import Flask, request, render_template, render_template_string, json
@@ -156,6 +157,46 @@ def get_file(markup_id=None):
 
     markup['markedText'] = '<br><br>'.join(blocks)
     return render_template_string('{{ markup.markedText|safe }}', markup=markup, editor=editor, user=auth.current_user())
+
+
+@application.route('/download/file')
+@auth.login_required
+def download_file():
+    ids = request.args.getlist('ids[]')
+    print(ids)
+    files = []
+    for markup_id in ids:
+        markup = db.markups.find_one({'_id': ObjectId(markup_id)})
+        editor = db.users.find_one({'username': markup['username']})
+
+        text = markup['markedText']
+        blocks = text.split('\n')
+
+        for mistake in sorted(markup['mistakes'], key=lambda m: len(m['selectedText']), reverse=True):
+            block = blocks[mistake['selectedTextBlock']]
+            for match in re.finditer(mistake['selectedText'].strip(), block):
+                pointer = min(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
+                if match.start() >= pointer:
+                    blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_by_rule(mistake), 1)
+                    break
+
+        theme = u' '.join(text.split()[:5]).replace('.', '')
+        number = abs(int(hashlib.sha256(markup_id.encode('utf-8')).hexdigest(), 16)) % (10**8) + 50000
+        filename = "%(number)d_en_%(theme)s_%(expert)s.txt" % {"expert": editor['code'], 'theme': theme, 'number': number}
+        f = open(filename, "w+")
+        for block in blocks:
+            f.write("%s\r\n" % block)
+        f.close()
+        files.append(filename)
+
+    zipfile = 'static%s%d.zip' % (os.path.sep, datetime.utcnow().timestamp())
+    zipObj = ZipFile(zipfile, 'w')
+    for filename in files:
+        zipObj.write(filename)
+        os.remove(filename)
+    zipObj.close()
+
+    return json.jsonify({'success': True, 'zipfile': zipfile.split(os.path.sep)[-1]})
 
 
 if __name__ == '__main__':

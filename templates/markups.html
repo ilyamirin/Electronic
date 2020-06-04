@@ -41,7 +41,7 @@
                         </ul>
                     </li>
                     <li class="pure-menu-item pure-menu-selected">
-                        <a href="/markups/download" class="pure-menu-link">Скачать файлы</a>
+                        <a href="/download/file" id="download-all" class="pure-menu-link">Скачать файлы</a>
                     </li>
                 </ul>
             </div>
@@ -60,7 +60,7 @@
                     <tbody class="markups-table-body">
                         {% for m in markups %}
                         <tr>
-                            <td><input type="checkbox" id="{{ m._id }}" name="{{ m._id }}" checked></td>
+                            <td><input type="checkbox" id="{{ m._id }}" name="{{ m._id }}"></td>
                             <td><label for="{{ m._id }}">{{ m._id }}</label></td>
                             <td title="{{ m.markedText }}">{{ m.sourceTextId }}</td>
                             <td>{{ m.username }}</td>
@@ -78,5 +78,30 @@
 
 <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $.when($.ready).then(function() {
+        $('#download-all').click(function(e) {
+            e.preventDefault();
 
+            var checked_list = $("td input:checked")
+
+            var checked_ids = $("td input:checked").map(function () {return this.id;});
+            console.log(checked_ids)
+
+            $.get('/download/file', {ids: [...checked_ids]}, function(res) {
+                console.log(res)
+                if (res.success) {
+                    window.open('/static/' + res.zipfile)
+                }
+            })
+
+            //$.each(checked_list, function() {
+                //console.log(this)
+            //    $.get($('#download-all').attr('href'), {ids: []} function(res) {
+            //        console.log(res)
+            //    })
+            //})
+        })
+    })
+</script>
 </html>
