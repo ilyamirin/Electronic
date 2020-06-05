@@ -61,12 +61,35 @@ def main(text_id=None):
     if text_id is not None:
         text = texts_collection.find_one({"_id": ObjectId(text_id)})
     else:
-        username_equal_current = {'username': auth.current_user()}
-        ids = list(db.markups.find(username_equal_current, {'sourceTextId': 1}))
-        edited_lesser_then_3 = {"edited": {"$lt": 3}}
-        id_not_in = {'_id': {'$nin': list(map(lambda i: ObjectId(i['sourceTextId']), ids))}}
-        texts = list(texts_collection.find({"$and": [id_not_in, edited_lesser_then_3]}).limit(10))
-        text = sample(texts, len(texts))[0]
+        markups_aggregation = db.markups.aggregate([
+            {
+                '$match': {
+                    'username': {'$ne': auth.current_user()}
+                }
+            }, {
+                '$group': {
+                    '_id': '$sourceTextId',
+                    'ts': {
+                        '$push': '$ts'
+                    }
+                }
+            }, {
+                '$project': {
+                    '_id': 1,
+                    'size_ts': {
+                        '$size': '$ts'
+                    }
+                }
+            }, {
+                '$match': {
+                    "size_ts": {
+                        '$lt': 3
+                    }
+                }
+            }])
+
+        text_id = sample(list(markups_aggregation), 1)[0]["_id"]
+        text = texts_collection.find_one({"_id": ObjectId(text_id)})
 
     body_split = text['body'].split()
     words_counter = len(body_split)
@@ -127,7 +150,8 @@ def mark_by_rule(m):
 
 
 def mark_and_highlight_by_rule(m):
-    result = '<code style="color:red">(\\ ' + m['errorCode'] + ' </code><code style="color:green">' + m['errorComment'] + " \\</code> " + m['selectedText']
+    result = '<code style="color:red">(\\ ' + m['errorCode'] + ' </code><code style="color:green">' + m[
+        'errorComment'] + " \\</code> " + m['selectedText']
     if len(m['errorDescription']) > 0:
         result += ' <code style="color:darkblue">:: ' + m['errorDescription'] + ' </code>'
     if len(m['replacement']) > 0:
@@ -152,11 +176,13 @@ def get_file(markup_id=None):
         for match in re.finditer(mistake['selectedText'].strip(), block):
             pointer = min(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
             if match.start() >= pointer:
-                blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_and_highlight_by_rule(mistake), 1)
+                blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'],
+                                                                     mark_and_highlight_by_rule(mistake), 1)
                 break
 
     markup['markedText'] = '<br><br>'.join(blocks)
-    return render_template_string('{{ markup.markedText|safe }}', markup=markup, editor=editor, user=auth.current_user())
+    return render_template_string('{{ markup.markedText|safe }}', markup=markup, editor=editor,
+                                  user=auth.current_user())
 
 
 @application.route('/download/file')
@@ -168,6 +194,7 @@ def download_file():
     for markup_id in ids:
         markup = db.markups.find_one({'_id': ObjectId(markup_id)})
         editor = db.users.find_one({'username': markup['username']})
+        origin = db.texts.find_one({'_id': ObjectId(markup['sourceTextId'])})
 
         text = markup['markedText']
         blocks = text.split('\n')
@@ -177,12 +204,14 @@ def download_file():
             for match in re.finditer(mistake['selectedText'].strip(), block):
                 pointer = min(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
                 if match.start() >= pointer:
-                    blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_by_rule(mistake), 1)
+                    blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_by_rule(mistake),
+                                                                         1)
                     break
 
-        theme = u' '.join(text.split()[:5]).replace('.', '')
-        number = abs(int(hashlib.sha256(markup_id.encode('utf-8')).hexdigest(), 16)) % (10**8) + 50000
-        filename = "%(number)d_en_%(theme)s_%(expert)s.txt" % {"expert": editor['code'], 'theme': theme, 'number': number}
+        theme = u'_'.join(text.split()[:5]).replace('.', '').replace('?', '').replace('!', '')
+        number = int(re.findall('^[0-9]+', origin['name'])[0])
+        filename = "%(number)d_en_%(theme)s_%(expert)s.txt" % {"expert": editor['code'], 'theme': theme,
+                                                               'number': number}
         f = open(filename, "w+")
         for block in blocks:
             f.write("%s\r\n" % block)
@@ -197,6 +226,11 @@ def download_file():
     zipObj.close()
 
     return json.jsonify({'success': True, 'zipfile': zipfile.split(os.path.sep)[-1]})
+
+
+@application.route('/logout')
+def logout():
+    return "Logout", 401
 
 
 if __name__ == '__main__':
