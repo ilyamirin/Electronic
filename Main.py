@@ -208,7 +208,11 @@ def download_file():
                                                                          1)
                     break
 
-        theme = u'_'.join(text.split()[:5]).replace('.', '').replace('?', '').replace('!', '')
+        theme = origin['theme']
+        if theme is None or len(theme) == 0:
+            theme = u'_'.join(text.split()[:5])
+        theme = theme.replace(' ', '_').replace('.', '').replace('?', '').replace('!', '').replace(',', '')
+
         number = int(re.findall('^[0-9]+', origin['name'])[0])
         filename = "%(number)d_en_%(theme)s_%(expert)s.txt" % {"expert": editor['code'], 'theme': theme,
                                                                'number': number}
