@@ -133,7 +133,35 @@ def new_text():
 @auth.login_required
 def markups():
     markups_collection = db.markups
-    result = sorted(list(markups_collection.find()), key=lambda mr: mr['ts'].timestamp(), reverse=True)
+    aggregated_markups = markups_collection.aggregate([
+        {
+            '$group': {
+                '_id': '$sourceTextId',
+                'ts': {
+                    '$push': {
+                        'username': '$username',
+                        'ts': '$ts',
+                        'markup_id': '$_id'
+                    }
+                }
+            }
+        }, {
+            '$unwind': {
+                'path': '$ts'
+            }
+        }
+    ])
+
+    result = {}
+    for markup in aggregated_markups:
+        key = markup['_id'] + markup['ts']['username']
+        if result.get(key) is None:
+            result[key] = markup
+        elif result[key]['ts']['ts'].timestamp() < markup['ts']['ts'].timestamp():
+            result[key] = markup
+    markup_ids = list(map(lambda m: m['ts']['markup_id'], result.values()))
+
+    result = sorted(list(markups_collection.find({'_id': {'$in': markup_ids}})), key=lambda mr: mr['ts'].timestamp(), reverse=True)
     return render_template('markups.html', markups=result, user=auth.current_user())
 
 
@@ -204,8 +232,7 @@ def download_file():
             for match in re.finditer(mistake['selectedText'].strip(), block):
                 pointer = min(int(mistake['selectedTextStart']), int(mistake['selectedTextFinish']))
                 if match.start() >= pointer:
-                    blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_by_rule(mistake),
-                                                                         1)
+                    blocks[mistake['selectedTextBlock']] = block.replace(mistake['selectedText'], mark_by_rule(mistake), 1)
                     break
 
         theme = origin['theme']
