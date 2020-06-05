@@ -226,8 +226,11 @@ def download_file():
     zipObj = ZipFile(zipfile, 'w')
     for filename in files:
         zipObj.write(filename)
-        os.remove(filename)
     zipObj.close()
+
+    for filename in files:
+        if os.path.exists(filename):
+            os.remove(filename)
 
     return json.jsonify({'success': True, 'zipfile': zipfile.split(os.path.sep)[-1]})
 
