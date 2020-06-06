@@ -63,28 +63,38 @@ def main(text_id=None):
     else:
         markups_aggregation = db.markups.aggregate([
             {
-                '$match': {
-                    'username': {'$ne': auth.current_user()}
-                }
-            }, {
                 '$group': {
                     '_id': '$sourceTextId',
                     'ts': {
                         '$push': '$ts'
+                    },
+                    'editors': {
+                        '$addToSet': '$username'
                     }
                 }
             }, {
                 '$project': {
-                    '_id': 1,
+                    '_id': '$_id',
                     'size_ts': {
                         '$size': '$ts'
-                    }
+                    },
+                    'editors': '$editors'
                 }
             }, {
                 '$match': {
-                    "size_ts": {
-                        '$lt': 3
-                    }
+                    '$and': [
+                        {
+                            'size_ts': {
+                                '$lt': 3
+                            }
+                        }, {
+                            'editors': {
+                                '$elemMatch': {
+                                    '$ne': auth.current_user()
+                                }
+                            }
+                        }
+                    ]
                 }
             }])
 
@@ -268,4 +278,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    application.run(host=self_host, port=80, debug=True)
+    application.run(host=self_host, port=5000, debug=True)
