@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.1/build/pure-min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+    .text-body {
+        padding: 1em
+    }
+    .custom-restricted-height {
+        height: 30em;
+    }
+    .source-text {
+        background-color: #f0ffeb
+    }
+    .marked-text {
+        background-color: #feffeb
+    }
+    </style>
+</head>
+<body>
+    <div class="pure-g">
+        <div class="pure-u-1-1">
+        </div>
+        <div class="pure-u-1-5">
+            <div class="pure-menu">
+                <a class="pure-menu-heading">Ошибки</a>
+                <table class="pure-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Код</th>
+                            <th>Коммент.</th>
+                            <th>X</th>
+                        </tr>
+                    </thead>
+                    <tbody class="mistakes-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="pure-u-3-5">
+            <div class="pure-menu pure-menu-horizontal">
+                <ul class="pure-menu-list">
+                    <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+                        <a href="#" id="menuLink1" class="pure-menu-link">{{ user }}</a>
+                        <ul class="pure-menu-children">
+                            {% if user in ['ilyam', 'natam', 'PaulOsmol'] %}
+                            <li class="pure-menu-item">
+                                <a href="/markups" class="pure-menu-link">Все разметки</a>
+                            </li>
+                            {% endif %}
+                            <li class="pure-menu-item">
+                                <a href="/logout" class="pure-menu-link">Выйти</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <p>Тема: <input id="theme-input" name="theme-input" /></p>
+            <p>Всего слов: <b id="words-counter"></b></p>
+            <div class="text-body source-text" id="text-body"></div>
+            <div class="text-body marked-text"></div>
+            <div class="text-body input-text"><textarea cols="70" rows="20"></textarea></div>
+        </div>
+        <div class="pure-u-1-5">
+            <a class="pure-menu-heading">Типы ошибок</a>
+            <div class="pure-menu-scrollable custom-restricted-height">
+
+            <ul class="pure-menu-list">
+                {% for criterion in errors.keys() %}
+                    <h3>{{ criterion  }}</h3>
+                    {% for code in errors.get(criterion) %}
+                    <h4>{{ code  }}</h4>
+                    <li class="pure-menu-item">
+                        {% for comment in errors.get(criterion).get(code) %}
+                            <a id="{{ errors.get(criterion).get(code).get(comment)._id }}" code="{{ code }}" title="{{ errors.get(criterion).get(code).get(comment).description }}" class="pure-menu-link pure-button error-button">{{ comment }}</a>
+                        {% endfor %}
+                    </li>
+                    {% endfor %}
+                {% endfor %}
+             </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="dialog-form" title="Разметка ошибки">
+        <form>
+            <fieldset>
+                <input type="hidden" name="errorCode" id="errorCode" value="errorCode">
+                <input type="hidden" name="selectedText" id="selectedText" value="selectedText">
+                <input type="hidden" name="selectedTextStart" id="selectedTextStart" value="selectedText">
+                <input type="hidden" name="selectedTextFinish" id="selectedTextFinish" value="selectedText">
+                <input type="hidden" name="selectedTextBlock" id="selectedTextBlock" value="selectedText">
+                <p><label for="errorComment">Комментарий</label>
+                  <input type="text" name="errorComment" id="errorComment" value="" class="text ui-widget-content ui-corner-all"></p>
+                <p><label for="errorDescription">Развернутое описание</label>
+                <textarea name="errorDescription" rows="7" cols="50" id="errorDescription" class="text ui-widget-content ui-corner-all">Extended description</textarea></p>
+                <p><label for="replacement">Правильная версия (если нужна)</label>
+                <textarea name="replacement" rows="7" cols="50" id="replacement" class="text ui-widget-content ui-corner-all"></textarea></p>
+                <p><label for="errorTag">Тег повторяющейся ошибки</label>
+                  <input type="text" name="errorTag" id="errorTag" value="" class="text ui-widget-content ui-corner-all"></p>
+            </fieldset>
+        </form>
+    </div>
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script src="{{ url_for('static', filename='plain_text.js') }}?n=1"></script>
+
+</html>

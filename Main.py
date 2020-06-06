@@ -52,53 +52,26 @@ def verify_password(username, password):
 
 
 @application.route('/')
+@auth.login_required
+def plain():
+    return render_template('plain_text.html', errors=get_errors(), user=auth.current_user())
+
+
 @application.route('/text')
 @application.route('/text/<text_id>')
 @auth.login_required
 def main(text_id=None):
     texts_collection = db.texts
-
+    texts_collection.update({'editedBy': {'$eq': 'null'}}, {'editedBy': []})
     if text_id is not None:
         text = texts_collection.find_one({"_id": ObjectId(text_id)})
     else:
-        markups_aggregation = db.markups.aggregate([
-            {
-                '$group': {
-                    '_id': '$sourceTextId',
-                    'ts': {
-                        '$push': '$ts'
-                    },
-                    'editors': {
-                        '$addToSet': '$username'
-                    }
-                }
-            }, {
-                '$project': {
-                    '_id': '$_id',
-                    'size_ts': {
-                        '$size': '$ts'
-                    },
-                    'editors': '$editors'
-                }
-            }, {
-                '$match': {
-                    '$and': [
-                        {
-                            'size_ts': {
-                                '$lt': 3
-                            }
-                        }, {
-                            'editors': {
-                                '$elemMatch': {
-                                    '$ne': auth.current_user()
-                                }
-                            }
-                        }
-                    ]
-                }
-            }])
-
-        text_id = sample(list(markups_aggregation), 1)[0]["_id"]
+        texts = []
+        for i in (0, 2):
+            if texts_collection.count({"editedBy": {'$size': i}}) > 0:
+                texts = list(texts_collection.find({"editedBy": {'$size': i}}))
+                break
+        text_id = sample(texts, 1)[0]["_id"]
         text = texts_collection.find_one({"_id": ObjectId(text_id)})
 
     body_split = text['body'].split()
