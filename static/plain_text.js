@@ -14,10 +14,15 @@ $.when( $.ready ).then(function() {
 
     function getSelectionText() {
         if (window.getSelection) {
+            start = window.getSelection().anchorOffset
+            finish = window.getSelection().focusOffset
+            if (start > finish) {
+                [start, finish] = [finish, start];
+            }
             return {
                 'text': window.getSelection().toString(),
-                'start': window.getSelection().anchorOffset,
-                'finish': window.getSelection().focusOffset,
+                'start': start,
+                'finish': finish,
                 'block': $(window.getSelection().anchorNode).parents('p').attr("block")
             }
         } else if (document.selection && document.selection.type != "Control") {
@@ -83,6 +88,7 @@ $.when( $.ready ).then(function() {
                 goReplace = true
                 newBlock = currentBlock.replace(new RegExp(selectedText, 'g'), function(match, offset, string) {
                     if ((offset >= pointer) && goReplace) {
+                        console.log(match, offset, pointer)
                         goReplace = false
                         return '<code style="color:red">'+m.selectedText+'</code>'
                     }
