@@ -2,3 +2,12 @@
 /.idea/
 *.zip
 *.txt
+__pycache__/
+db/
+mongo.log
+nohup.out
+run.sh
+run.sh.save
+test.py
+unicorn.log
+wsgi.py
