@@ -82,7 +82,7 @@ $.when( $.ready ).then(function() {
             sortedM.forEach(function(m) {
                 pointer = Math.min(m.selectedTextStart, m.selectedTextFinish)
 
-                selectedText = m.selectedText.trim().replace('*', '\\*').replace('?', '\\?').replace('<', '\\<').replace('>', '\\>')
+                selectedText = m.selectedText.trim().replace('?', '\\?')
 
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
@@ -125,9 +125,11 @@ $.when( $.ready ).then(function() {
 
     $('.input-text').keypress(function(e) {
         text = $(this).children('textarea').val()
+        illegalLettersRE = new RegExp('[^A-Za-z0-9\\s\\!\\?\\(\\)\\:\\;\\"]', 'g')
+        text = text.replace(illegalLettersRE, '')
         $('.source-text').html(nl2br(text))
         $('.marked-text').html(nl2br(text))
-        $('#words-counter').text(text.split(' ').length)
+        $('#words-counter').text(text.split(new RegExp('\\s')).length)
     })
 
     function createNewMistake() {
