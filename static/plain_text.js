@@ -125,7 +125,8 @@ $.when( $.ready ).then(function() {
 
     $('.input-text').keypress(function(e) {
         text = $(this).children('textarea').val()
-        illegalLettersRE = new RegExp('[^A-Za-z0-9\\s\\!\\?\\(\\)\\:\\;\\"\\.\\,\\`]', 'g')
+        text = text.replace('\'', '`')
+        illegalLettersRE = new RegExp('[^A-Za-z0-9\\s\\!\\?\\(\\)\\:\\;\\"\\.\\,\\`\\-]', 'g')
         text = text.replace(illegalLettersRE, '')
         $('.source-text').html(nl2br(text))
         $('.marked-text').html(nl2br(text))
