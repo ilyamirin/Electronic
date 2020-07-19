@@ -3,6 +3,10 @@ String.prototype.replaceBetween = function(start, end, what) {
 };
 
 $.when( $.ready ).then(function() {
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    }
+
     function nl2br(str){
         result = ''
         i = 0
@@ -86,7 +90,7 @@ $.when( $.ready ).then(function() {
 
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
-                newBlock = currentBlock.replace(new RegExp(selectedText, 'g'), function(match, offset, string) {
+                newBlock = currentBlock.replace(new RegExp(escapeRegExp(selectedText), 'g'), function(match, offset, string) {
                     if ((offset >= pointer) && goReplace) {
                         goReplace = false
                         return '<code style="color:red">'+m.selectedText+'</code>'
@@ -97,7 +101,7 @@ $.when( $.ready ).then(function() {
 
                 goReplace = true
                 currentBlock = textForMarkup.split('\n')[m.selectedTextBlock]
-                newBlock = currentBlock.replace(new RegExp(selectedText, 'g'), function(match, offset, string) {
+                newBlock = currentBlock.replace(new RegExp(escapeRegExp(selectedText), 'g'), function(match, offset, string) {
                 if ((offset >= pointer) && goReplace) {
                         goReplace = false
                         return markAndHightlightByRule(m)
