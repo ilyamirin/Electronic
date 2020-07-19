@@ -87,8 +87,8 @@ $.when( $.ready ).then(function() {
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
                 newBlock = currentBlock.replace(new RegExp(selectedText, 'g'), function(match, offset, string) {
+                    console.log("repl", match, offset, pointer)
                     if ((offset >= pointer) && goReplace) {
-                        console.log(match, offset, pointer)
                         goReplace = false
                         return '<code style="color:red">'+m.selectedText+'</code>'
                     }
@@ -125,8 +125,8 @@ $.when( $.ready ).then(function() {
 
     $('.input-text').keypress(function(e) {
         text = $(this).children('textarea').val()
-        text = text.replace('\'', '`')
-        illegalLettersRE = new RegExp('[^A-Za-z0-9\\s\\!\\?\\(\\)\\:\\;\\"\\.\\,\\`\\-]', 'g')
+        text = text.replace(new RegExp('\'|\\’'), '`')
+        illegalLettersRE = new RegExp('[^A-Za-z0-9\\s\\!\\?\\(\\)\\:\\;\\"\\.\\,\\`\\-\\–]', 'g')
         text = text.replace(illegalLettersRE, '')
         $('.source-text').html(nl2br(text))
         $('.marked-text').html(nl2br(text))
