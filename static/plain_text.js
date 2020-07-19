@@ -87,7 +87,6 @@ $.when( $.ready ).then(function() {
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
                 newBlock = currentBlock.replace(new RegExp(selectedText, 'g'), function(match, offset, string) {
-                    console.log("repl", match, offset, pointer)
                     if ((offset >= pointer) && goReplace) {
                         goReplace = false
                         return '<code style="color:red">'+m.selectedText+'</code>'
@@ -115,7 +114,6 @@ $.when( $.ready ).then(function() {
                 i = $(e.target).attr('i')
                 //$(".source-text").animate({color:'red'},1000);
                 mistakes.splice(i, 1)
-                console.log(i)
                 showMistakes()
             });
     }
@@ -148,9 +146,6 @@ $.when( $.ready ).then(function() {
 
         if (mistake.selectedText.length > 0) {
             mistakes.push(mistake)
-            //mistakes = mistakes.sort(function(a, b) { return -(a.selectedTextFinish - a.selectedTextStart) + (b.selectedTextFinish - b.selectedTextStart)})
-            console.log(mistakes)
-
             showMistakes()
         }
     }
@@ -203,13 +198,5 @@ $.when( $.ready ).then(function() {
             'markedText': text,
             'mistakes': JSON.stringify(mistakes),
         }
-//        $.post('/markup/add', markupToSave, function(result) {
- //           console.log(result)
-  //          if (result.objectId.length > 0) {
-   //             alert("Сохранено! Нажмите кнопку \"Следующий\" для перехода к следующему тексту.")
-    //        } else {
-     //           alert("Не работает! Пишите администратору!")
-      //      }
-        //});
     });
 });
