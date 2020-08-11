@@ -86,7 +86,7 @@ $.when( $.ready ).then(function() {
             sortedM.forEach(function(m) {
                 pointer = Math.min(m.selectedTextStart, m.selectedTextFinish)
 
-                selectedText = m.selectedText.trim().replace('?', '\\?')
+                selectedText = m.selectedText.trim()//.replace('?', '\\?')
 
                 currentBlock = textForEdition.split('\n')[m.selectedTextBlock]
                 goReplace = true
